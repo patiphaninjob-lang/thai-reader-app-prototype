@@ -13,7 +13,7 @@ import {
   Plus,
   Sun,
 } from "@phosphor-icons/react";
-import { getReadingGuide } from "./readingGuides.js";
+import { getReadingGuide, hasReadingGuides } from "./readingGuides.js";
 
 const books = [
   ["book1", "01", "ผู้รอด", "บันทึกจากเส้นสมมุติของตลาด", "#2d2a24"],
@@ -426,6 +426,7 @@ function App() {
   const readerRef = useRef(null);
 
   const activeBook = books.find((book) => book.id === stored.activeBookId) || books[0];
+  const activeBookHasGuides = hasReadingGuides(activeBook.id);
   const bookText = useBookText(activeBook);
   const blocks = useMemo(() => parseMarkdown(bookText.text).map((block, sourceIndex) => ({ ...block, sourceIndex })), [bookText.text]);
   const displayBlocks = useMemo(
@@ -547,8 +548,8 @@ function App() {
   };
 
   const jumpToReadingGuide = () => {
-    if (activeBook.id !== "book8") {
-      notify("จับแก่นเริ่มใช้ในเล่ม 8 ก่อน");
+    if (!activeBookHasGuides) {
+      notify("เล่มนี้ยังไม่มีจับแก่น");
       return;
     }
 
@@ -826,7 +827,7 @@ function App() {
             </div>
           )}
 
-          <footer className={`reading-controls ${activeBook.id === "book8" ? "has-guide-control" : ""}`}>
+          <footer className={`reading-controls ${activeBookHasGuides ? "has-guide-control" : ""}`}>
             <button
               type="button"
               className="has-tip"
@@ -849,7 +850,7 @@ function App() {
             >
               <BookmarkSimple size={20} weight={currentBookmark ? "fill" : "regular"} />
             </button>
-            {activeBook.id === "book8" && (
+            {activeBookHasGuides && (
               <button
                 type="button"
                 className={`has-tip guide-control ${stored.showReadingGuides ? "is-saved" : ""}`}
@@ -943,14 +944,14 @@ function App() {
             <div className="setting-row">
               <div>
                 <strong>จับแก่น</strong>
-                <span>เปิดแล้วไปหน้าอ่านเล่ม 8 แล้วแตะไอคอนหลอดไฟ</span>
+                <span>เปิดแล้วไปหน้าอ่าน แล้วแตะไอคอนหลอดไฟ</span>
               </div>
               <button
                 type="button"
                 className={`switch-button has-tip ${stored.showReadingGuides ? "active" : ""}`}
                 onClick={() => {
                   updateStored({ showReadingGuides: !stored.showReadingGuides });
-                  notify(stored.showReadingGuides ? "ปิดจับแก่นแล้ว" : "เปิดจับแก่นแล้ว ใช้ไอคอนหลอดไฟในเล่ม 8");
+                  notify(stored.showReadingGuides ? "ปิดจับแก่นแล้ว" : "เปิดจับแก่นแล้ว ใช้ไอคอนหลอดไฟในหน้าอ่าน");
                 }}
                 aria-pressed={Boolean(stored.showReadingGuides)}
                 data-tip="เปิดหรือปิดการ์ดจับแก่นท้ายหัวข้อ"
