@@ -58,7 +58,7 @@ function parseMarkdown(markdown) {
 
   const flushParagraph = () => {
     if (!paragraph.length) return;
-    blocks.push({ type: "p", text: paragraph.join("\n") });
+    blocks.push(normalizeParagraph(paragraph));
     paragraph = [];
   };
 
@@ -68,9 +68,23 @@ function parseMarkdown(markdown) {
     quote = [];
   };
 
-  for (const rawLine of lines) {
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+    const rawLine = lines[lineIndex];
     const line = rawLine.trimEnd();
     const trimmed = line.trim();
+
+    if (trimmed === "```") {
+      flushParagraph();
+      flushQuote();
+      const code = [];
+      lineIndex += 1;
+      while (lineIndex < lines.length && lines[lineIndex].trim() !== "```") {
+        code.push(lines[lineIndex].trimEnd());
+        lineIndex += 1;
+      }
+      blocks.push(parseFencedCode(code.join("\n")));
+      continue;
+    }
 
     if (!trimmed) {
       flushParagraph();
@@ -99,12 +113,189 @@ function parseMarkdown(markdown) {
       continue;
     }
 
+    if (isTableLine(trimmed)) {
+      flushParagraph();
+      flushQuote();
+      const tableLines = [trimmed];
+      while (lineIndex + 1 < lines.length && isTableLine(lines[lineIndex + 1].trim())) {
+        lineIndex += 1;
+        tableLines.push(lines[lineIndex].trim());
+      }
+      blocks.push(parseTable(tableLines));
+      continue;
+    }
+
+    if (isChecklistLine(trimmed)) {
+      flushParagraph();
+      flushQuote();
+      const items = [parseChecklistLine(trimmed)];
+      while (lineIndex + 1 < lines.length && isChecklistLine(lines[lineIndex + 1].trim())) {
+        lineIndex += 1;
+        items.push(parseChecklistLine(lines[lineIndex].trim()));
+      }
+      blocks.push({ type: "checklist", items });
+      continue;
+    }
+
+    if (isBulletLine(trimmed)) {
+      flushParagraph();
+      flushQuote();
+      const items = [parseBulletLine(trimmed)];
+      while (lineIndex + 1 < lines.length && isBulletLine(lines[lineIndex + 1].trim())) {
+        lineIndex += 1;
+        items.push(parseBulletLine(lines[lineIndex].trim()));
+      }
+      blocks.push({ type: "list", items });
+      continue;
+    }
+
     paragraph.push(line);
   }
 
   flushParagraph();
   flushQuote();
   return blocks;
+}
+
+function normalizeParagraph(lines) {
+  const text = lines.join("\n");
+  return { type: "p", text };
+}
+
+function isTableLine(line) {
+  return /^\|.+\|$/.test(line);
+}
+
+function isTableSeparator(line) {
+  return /^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?$/.test(line);
+}
+
+function parseTable(lines) {
+  const rows = lines.map((line) => line.replace(/^\||\|$/g, "").split("|").map((cell) => cell.trim()));
+
+  if (rows.length >= 2 && isTableSeparator(lines[1])) {
+    return { type: "table", headers: rows[0], rows: rows.slice(2) };
+  }
+
+  return { type: "p", text: lines.join("\n") };
+}
+
+function isChecklistLine(line) {
+  return /^(☐|\[ \]|- \[ \])\s+/.test(line);
+}
+
+function parseChecklistLine(line) {
+  return line.replace(/^(☐|\[ \]|- \[ \])\s+/, "");
+}
+
+function isBulletLine(line) {
+  return /^[-*]\s+/.test(line);
+}
+
+function parseBulletLine(line) {
+  return line.replace(/^[-*]\s+/, "");
+}
+
+function parseFencedCode(code) {
+  const callout = parseBoxCallout(code);
+  if (callout) return callout;
+  return { type: "code", text: code };
+}
+
+function parseBoxCallout(code) {
+  const lines = code.split("\n").filter((line) => line.trim());
+
+  if (!lines.some((line) => /^[┌├└│]/.test(line.trim()))) {
+    return null;
+  }
+
+  const content = lines
+    .filter((line) => !/^[┌├└]/.test(line.trim()))
+    .map((line) => line.replace(/^\s*│\s?/, "").replace(/\s*│\s*$/, "").trimEnd());
+  const firstContentIndex = content.findIndex((line) => line.trim());
+
+  if (firstContentIndex === -1) {
+    return null;
+  }
+
+  const title = content[firstContentIndex].trim();
+  const body = trimEmptyLines(content.slice(firstContentIndex + 1));
+  return {
+    type: "callout",
+    title,
+    variant: calloutVariant(title),
+    body,
+  };
+}
+
+function trimEmptyLines(lines) {
+  let start = 0;
+  let end = lines.length;
+
+  while (start < end && !lines[start].trim()) start += 1;
+  while (end > start && !lines[end - 1].trim()) end -= 1;
+  return lines.slice(start, end);
+}
+
+function calloutVariant(title) {
+  if (/WARNING/i.test(title)) return "warning";
+  if (/ACTION/i.test(title)) return "action";
+  if (/KEY CONCEPT/i.test(title)) return "key";
+  if (/CASE STUDY/i.test(title)) return "case";
+  return "note";
+}
+
+function quoteToCallout(text) {
+  const warning = text.match(/^⚠️\s*(WARNING)\s*:\s*(.+)$/i);
+  if (!warning) return null;
+
+  return {
+    title: `⚠️ ${warning[1].toUpperCase()}`,
+    variant: "warning",
+    body: [warning[2]],
+  };
+}
+
+function renderCallout(block, index) {
+  return (
+    <section className={`manual-callout manual-callout-${block.variant}`} key={index} data-block-index={index}>
+      <div className="manual-callout-kicker">{block.title}</div>
+      <div className="manual-callout-body">
+        {block.body.map((line, lineIndex) => {
+          const displayLine = cleanManualLine(line);
+          if (!displayLine.trim()) return <div className="manual-callout-gap" key={lineIndex} />;
+          if (line.includes("│")) {
+            const cells = line.split("│").map(cleanManualLine).filter(Boolean);
+            if (cells.length) {
+              return (
+                <div className="manual-matrix-row" key={lineIndex}>
+                  {cells.map((cell, cellIndex) => (
+                    <span key={cellIndex}>
+                      <InlineText text={cell} />
+                    </span>
+                  ))}
+                </div>
+              );
+            }
+          }
+          return (
+            <p key={lineIndex}>
+              <InlineText text={displayLine} />
+            </p>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function cleanManualLine(line) {
+  return line
+    .replace(/[┌┐└┘├┤│]/g, "")
+    .replace(/[─━]+/g, " — ")
+    .replace(/\s+—\s+(?=—)/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
 }
 
 function InlineText({ text }) {
@@ -284,10 +475,74 @@ function App() {
   const renderBlock = (block, index) => {
     if (block.type === "divider") return <hr key={index} className="reader-divider" />;
     if (block.type === "quote") {
+      const callout = quoteToCallout(block.text);
+      if (callout) {
+        return renderCallout(callout, index);
+      }
+
       return (
         <blockquote key={index} data-block-index={index}>
           <InlineText text={block.text} />
         </blockquote>
+      );
+    }
+    if (block.type === "callout") return renderCallout(block, index);
+    if (block.type === "table") {
+      return (
+        <div className="manual-table-wrap" key={index} data-block-index={index}>
+          <table className="manual-table">
+            <thead>
+              <tr>
+                {block.headers.map((header, headerIndex) => (
+                  <th key={headerIndex}>
+                    <InlineText text={header} />
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {block.rows.map((row, rowIndex) => (
+                <tr key={rowIndex}>
+                  {row.map((cell, cellIndex) => (
+                    <td key={cellIndex}>
+                      <InlineText text={cell} />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+    if (block.type === "checklist") {
+      return (
+        <ul className="manual-checklist" key={index} data-block-index={index}>
+          {block.items.map((item, itemIndex) => (
+            <li key={itemIndex}>
+              <span aria-hidden="true" />
+              <InlineText text={item} />
+            </li>
+          ))}
+        </ul>
+      );
+    }
+    if (block.type === "list") {
+      return (
+        <ul className="reader-list" key={index} data-block-index={index}>
+          {block.items.map((item, itemIndex) => (
+            <li key={itemIndex}>
+              <InlineText text={item} />
+            </li>
+          ))}
+        </ul>
+      );
+    }
+    if (block.type === "code") {
+      return (
+        <pre className="manual-code" key={index} data-block-index={index}>
+          {block.text}
+        </pre>
       );
     }
     if (block.type === "h1") {
@@ -420,7 +675,7 @@ function App() {
             {bookText.status === "ready" && (
               <>
                 {bookText.warning && <div className="source-warning">{bookText.warning}</div>}
-                <article>{blocks.map(renderBlock)}</article>
+                <article className={activeBook.id === "book8" ? "field-manual" : ""}>{blocks.map(renderBlock)}</article>
               </>
             )}
           </main>

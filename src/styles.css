@@ -370,6 +370,10 @@ button:focus-visible,
   text-align: start;
 }
 
+.reader article.field-manual {
+  font-family: "Noto Sans Thai", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
 .reader h1,
 .reader h2,
 .reader h3 {
@@ -407,6 +411,202 @@ button:focus-visible,
   border-left: 2px solid var(--gold);
   color: var(--muted);
   font-style: italic;
+}
+
+.reader-list,
+.manual-checklist {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 24px;
+  padding: 0;
+  list-style: none;
+}
+
+.reader-list li,
+.manual-checklist li {
+  position: relative;
+  padding-left: 22px;
+}
+
+.reader-list li::before {
+  content: "";
+  position: absolute;
+  top: 0.78em;
+  left: 4px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+
+.manual-checklist {
+  gap: 10px;
+  margin: 18px 0 30px;
+}
+
+.manual-checklist li {
+  padding: 13px 14px 13px 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-2) 72%, transparent);
+  font-family: "Noto Sans Thai", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: calc(var(--reader-font) * 0.9);
+  line-height: 1.55;
+}
+
+.manual-checklist li > span {
+  position: absolute;
+  top: 16px;
+  left: 15px;
+  width: 15px;
+  height: 15px;
+  border: 1.8px solid var(--gold);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+}
+
+.manual-callout {
+  --callout-accent: var(--gold);
+  --callout-bg: color-mix(in srgb, var(--surface-2) 82%, var(--callout-accent) 10%);
+  margin: 28px 0 32px;
+  padding: 18px 18px 17px;
+  border: 1px solid color-mix(in srgb, var(--callout-accent) 42%, var(--line));
+  border-left-width: 5px;
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--callout-accent) 10%, transparent), transparent 48%),
+    var(--callout-bg);
+  box-shadow: 0 14px 34px rgba(40, 33, 22, 0.08);
+  font-family: "Noto Sans Thai", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.manual-callout-warning {
+  --callout-accent: #b85f49;
+}
+
+.manual-callout-action {
+  --callout-accent: #2f6a4a;
+}
+
+.manual-callout-key {
+  --callout-accent: #9a763c;
+}
+
+.manual-callout-case {
+  --callout-accent: #596a71;
+}
+
+.manual-callout-kicker {
+  display: inline-flex;
+  max-width: 100%;
+  margin: 0 0 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--callout-accent) 15%, var(--surface));
+  color: color-mix(in srgb, var(--callout-accent) 82%, var(--text));
+  font-size: calc(var(--reader-font) * 0.7);
+  font-weight: 800;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.manual-callout-body {
+  display: grid;
+  gap: 8px;
+}
+
+.manual-callout-body p {
+  margin: 0;
+  color: var(--text);
+  font-size: calc(var(--reader-font) * 0.94);
+  line-height: 1.58;
+  white-space: normal;
+}
+
+.manual-callout-gap {
+  height: 5px;
+}
+
+.manual-matrix-row {
+  display: block;
+  padding: 8px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--callout-accent) 18%, transparent);
+}
+
+.manual-matrix-row span {
+  display: inline;
+  font-size: calc(var(--reader-font) * 0.76);
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.manual-matrix-row span + span::before {
+  content: " / ";
+  color: color-mix(in srgb, var(--callout-accent) 52%, var(--muted));
+  font-weight: 500;
+}
+
+.manual-table-wrap {
+  margin: 22px -10px 30px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.manual-table {
+  width: 100%;
+  min-width: 455px;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  font-family: "Noto Sans Thai", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: calc(var(--reader-font) * 0.74);
+  line-height: 1.46;
+  box-shadow: 0 12px 28px rgba(40, 33, 22, 0.06);
+}
+
+.manual-table th,
+.manual-table td {
+  padding: 11px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.manual-table th:first-child,
+.manual-table td:first-child {
+  width: 26%;
+}
+
+.manual-table th {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-2));
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.manual-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.manual-table td + td,
+.manual-table th + th {
+  border-left: 1px solid var(--line);
+}
+
+.manual-code {
+  margin: 24px 0 30px;
+  padding: 16px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-2) 84%, var(--text) 5%);
+  color: var(--text);
+  font-family: "Noto Sans Thai", Consolas, monospace;
+  font-size: calc(var(--reader-font) * 0.82);
+  line-height: 1.6;
+  white-space: pre;
 }
 
 .reader-divider {

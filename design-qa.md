@@ -1,7 +1,7 @@
 source visual truth path: conversation-approved direction, `layout-research.md`, and local book cover references in `public/covers/`
-implementation screenshot path: `qa-screenshots/01-library.png`, `qa-screenshots/05-reader-after-layout-fix.png`, `qa-screenshots/06-reader-scroll-after-layout-fix.png`, `qa-screenshots/04-settings.png`, `qa-screenshots/11-bookmark-tooltip-custom.png`, `qa-screenshots/12-bookmark-feedback-custom.png`, `qa-screenshots/13-pwa-offline-reload.png`, `qa-screenshots/14-github-pages-offline-reload.png`
+implementation screenshot path: `qa-screenshots/01-library.png`, `qa-screenshots/05-reader-after-layout-fix.png`, `qa-screenshots/06-reader-scroll-after-layout-fix.png`, `qa-screenshots/04-settings.png`, `qa-screenshots/11-bookmark-tooltip-custom.png`, `qa-screenshots/12-bookmark-feedback-custom.png`, `qa-screenshots/13-pwa-offline-reload.png`, `qa-screenshots/14-github-pages-offline-reload.png`, `qa-screenshots/21-book8-callout-final-clean.png`, `qa-screenshots/22-book8-table-final-clean.png`, `qa-screenshots/24-book8-matrix-final-readable.png`
 viewport: 390 x 844
-state: library, reader top, reader scrolled, settings, bookmark tooltip, bookmark feedback, PWA offline reload, GitHub Pages subpath offline reload
+state: library, reader top, reader scrolled, settings, bookmark tooltip, bookmark feedback, PWA offline reload, GitHub Pages subpath offline reload, Book 8 field-manual callouts/tables/matrix
 full-view comparison evidence: implementation screenshots inspected after build; no standalone pixel-perfect ImageGen source file was available in the workspace
 focused region comparison evidence: reader top/bottom chrome inspected after fixing content overlap; Thai text rendering checked in browser
 
@@ -16,6 +16,7 @@ focused region comparison evidence: reader top/bottom chrome inspected after fix
 - Copy and content: manuscripts are copied byte-for-byte into `public/books/`; the renderer only turns Markdown markers into display blocks. Browser text check found no replacement/control characters.
 - Interaction feedback: key controls include custom hover tooltips, focus rings, pressed motion, and status feedback. Bookmark state is visible through active styling plus a short action toast. Native browser `title` tooltips were removed to prevent unstyled overlays.
 - Mobile app readiness: production build includes a web app manifest, app icons, iOS home-screen metadata, and a service worker that caches the shell, covers, and all 8 book manuscripts.
+- Book 8 field-manual blocks: ASCII boxes now render as designed callout components; Markdown tables render as styled mobile tables; checklist lines render as checklist cards; matrix-style boxed diagrams render as clean stacked manual rows.
 
 **Open Questions**
 - Pixel-perfect comparison is limited because no selected mockup image file exists locally. The build follows the approved combined direction: Quiet Library plus Reader Sanctuary.
@@ -26,6 +27,7 @@ focused region comparison evidence: reader top/bottom chrome inspected after fix
 - Bookmark, progress, TOC, settings, font size, line height, and theme controls work.
 - Hover descriptions and click feedback are present on reader actions, especially bookmark, TOC, typography, line height, and theme controls.
 - PWA preview registers service worker `survivor-library-v5`; manifest, icons, and cached manuscripts respond during simulated offline mode. GitHub Pages subpath simulation also loads covers, manuscripts, and offline reload correctly.
+- Book 8 renderer QA: 145 callouts, 33 tables, 14 checklists, and 179 matrix rows render as components. No box-drawing characters remain in the visible reader DOM and no encoding issues were detected.
 - Build completes with `npm run build`.
 
 **Follow-up Polish**
@@ -36,4 +38,5 @@ patches made since previous QA pass: adjusted `.reader` top and bottom bounds so
 patches made after interaction polish: added Apple-style subtle hover explanations, pressed states, focus rings, active bookmark styling, and short action feedback.
 patches made for mobile app readiness: added PWA manifest, service worker cache, generated icons, production registration, mobile preview scripts, and `MOBILE_APP.md`.
 patches made for GitHub Pages readiness: switched built asset paths to relative mode, scoped service worker caching to the Pages subpath, and added `.github/workflows/pages.yml`.
+patches made for Book 8 layout polish: added field-manual parsing/rendering for callouts, tables, checklists, lists, matrix rows, and raw code fallbacks without changing manuscript files.
 final result: passed
