@@ -579,6 +579,10 @@ button:focus-visible,
   white-space: normal;
 }
 
+.reading-guide-card.guide-pulse {
+  animation: guide-pulse 760ms ease;
+}
+
 .manual-matrix-row {
   display: block;
   padding: 8px 0;
@@ -700,6 +704,10 @@ button:focus-visible,
   background: color-mix(in srgb, var(--surface) 82%, transparent);
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
   backdrop-filter: blur(22px);
+}
+
+.reading-controls.has-guide-control {
+  grid-template-columns: 44px 44px 44px 1fr 42px;
 }
 
 .reading-controls button {
@@ -1051,6 +1059,18 @@ button:focus-visible,
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes guide-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--gold) 28%, transparent);
+  }
+  55% {
+    box-shadow: 0 0 0 9px color-mix(in srgb, var(--gold) 10%, transparent);
+  }
+  100% {
+    box-shadow: 0 14px 34px rgba(40, 33, 22, 0.07);
   }
 }
 

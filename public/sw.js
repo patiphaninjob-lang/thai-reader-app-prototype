@@ -1,4 +1,4 @@
-const CACHE_NAME = "survivor-library-v5";
+const CACHE_NAME = "survivor-library-v6";
 const APP_SHELL_URL = new URL(".", self.registration.scope).pathname;
 
 const PRECACHE_URLS = [

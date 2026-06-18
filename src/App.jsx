@@ -7,6 +7,7 @@ import {
   Check,
   GearSix,
   House,
+  Lightbulb,
   Minus,
   Moon,
   Plus,
@@ -526,6 +527,41 @@ function App() {
     notify("ไปที่หัวข้อแล้ว");
   };
 
+  const scrollToReadingGuide = () => {
+    const node = readerRef.current;
+    if (!node) return;
+
+    const guideCards = Array.from(node.querySelectorAll(".reading-guide-card"));
+    if (!guideCards.length) {
+      notify("จับแก่นมีอยู่ในเล่ม 8 ตามหัวข้อสำคัญ");
+      return;
+    }
+
+    const nextGuide = guideCards.find((card) => card.offsetTop > node.scrollTop + 130) || guideCards[0];
+    node.scrollTo({ top: Math.max(0, nextGuide.offsetTop - 104), behavior: "smooth" });
+    nextGuide.classList.remove("guide-pulse");
+    void nextGuide.offsetWidth;
+    nextGuide.classList.add("guide-pulse");
+    window.setTimeout(() => nextGuide.classList.remove("guide-pulse"), 900);
+    notify("ไปที่จับแก่นแล้ว");
+  };
+
+  const jumpToReadingGuide = () => {
+    if (activeBook.id !== "book8") {
+      notify("จับแก่นเริ่มใช้ในเล่ม 8 ก่อน");
+      return;
+    }
+
+    if (!stored.showReadingGuides) {
+      updateStored({ showReadingGuides: true });
+      notify("เปิดจับแก่นแล้ว กำลังพาไปจุดแรก");
+      window.setTimeout(scrollToReadingGuide, 80);
+      return;
+    }
+
+    scrollToReadingGuide();
+  };
+
   const renderBlock = (block, index) => {
     const blockIndex = block.sourceIndex ?? index;
 
@@ -790,7 +826,7 @@ function App() {
             </div>
           )}
 
-          <footer className="reading-controls">
+          <footer className={`reading-controls ${activeBook.id === "book8" ? "has-guide-control" : ""}`}>
             <button
               type="button"
               className="has-tip"
@@ -813,6 +849,18 @@ function App() {
             >
               <BookmarkSimple size={20} weight={currentBookmark ? "fill" : "regular"} />
             </button>
+            {activeBook.id === "book8" && (
+              <button
+                type="button"
+                className={`has-tip guide-control ${stored.showReadingGuides ? "is-saved" : ""}`}
+                onClick={jumpToReadingGuide}
+                aria-label="จับแก่นถัดไป"
+                aria-pressed={Boolean(stored.showReadingGuides)}
+                data-tip={stored.showReadingGuides ? "ไปจับแก่นถัดไป" : "เปิดจับแก่นแล้วไปจุดแรก"}
+              >
+                <Lightbulb size={20} weight={stored.showReadingGuides ? "fill" : "regular"} />
+              </button>
+            )}
             <div className="read-meter">
               <span style={{ width: `${percent(currentProgress)}%` }} />
             </div>
@@ -895,14 +943,14 @@ function App() {
             <div className="setting-row">
               <div>
                 <strong>จับแก่น</strong>
-                <span>ตัวช่วยจำเฉพาะหัวข้อสำคัญในเล่ม 8</span>
+                <span>เปิดแล้วไปหน้าอ่านเล่ม 8 แล้วแตะไอคอนหลอดไฟ</span>
               </div>
               <button
                 type="button"
                 className={`switch-button has-tip ${stored.showReadingGuides ? "active" : ""}`}
                 onClick={() => {
                   updateStored({ showReadingGuides: !stored.showReadingGuides });
-                  notify(stored.showReadingGuides ? "ปิดจับแก่นแล้ว" : "เปิดจับแก่นแล้ว");
+                  notify(stored.showReadingGuides ? "ปิดจับแก่นแล้ว" : "เปิดจับแก่นแล้ว ใช้ไอคอนหลอดไฟในเล่ม 8");
                 }}
                 aria-pressed={Boolean(stored.showReadingGuides)}
                 data-tip="เปิดหรือปิดการ์ดจับแก่นท้ายหัวข้อ"
