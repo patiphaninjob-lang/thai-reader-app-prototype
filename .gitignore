@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.npm-cache/
+*.log
+*.err.log
+vite-dev.log
+vite-dev.err.log
+vite-preview*.log
+vite-preview*.err.log
