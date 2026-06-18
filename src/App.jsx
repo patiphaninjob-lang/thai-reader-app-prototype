@@ -520,7 +520,7 @@ function App() {
         <ul className="manual-checklist" key={index} data-block-index={index}>
           {block.items.map((item, itemIndex) => (
             <li key={itemIndex}>
-              <span aria-hidden="true" />
+              <span className="manual-checkmark" aria-hidden="true" />
               <InlineText text={item} />
             </li>
           ))}

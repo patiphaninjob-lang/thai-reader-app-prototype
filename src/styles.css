@@ -454,7 +454,7 @@ button:focus-visible,
   line-height: 1.55;
 }
 
-.manual-checklist li > span {
+.manual-checkmark {
   position: absolute;
   top: 16px;
   left: 15px;
